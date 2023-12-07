@@ -4,7 +4,9 @@ import java.awt.geom.RoundRectangle2D;
 import java.util.Arrays;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
+import java.util.Objects;
 
+// Custom JButton with rounded corners
 class RoundedButton extends JButton {
     private static final int ARC_WIDTH = 15;
     private static final int ARC_HEIGHT = 15;
@@ -16,15 +18,18 @@ class RoundedButton extends JButton {
 
     @Override
     protected void paintComponent(Graphics g) {
+        // Custom painting for rounded button
         Graphics2D g2 = (Graphics2D) g.create();
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         int width = getWidth();
         int height = getHeight();
 
+        // Fill the button background with rounded corners
         g2.setColor(getBackground());
         g2.fill(new RoundRectangle2D.Double(0, 0, width, height, ARC_WIDTH, ARC_HEIGHT));
 
+        // Draw button text in the center
         g2.setColor(getForeground());
         g2.setFont(getFont());
         FontMetrics fm = g2.getFontMetrics();
@@ -36,18 +41,26 @@ class RoundedButton extends JButton {
     }
 }
 
+// Main application class
 public class ToDoListApp extends JFrame {
 
-    private CardLayout cardLayout;
-    private JPanel cardPanel;
+    private final CardLayout cardLayout;
+    private final JPanel cardPanel;
     private JFrame verificationFrame;
 
+    // User information variables
+    private String userEmail;
+    private String username;
+    private String password;
+
+    // Constructor for the main application
     public ToDoListApp() {
         super("ToDoList App");
 
         cardLayout = new CardLayout();
         cardPanel = new JPanel(cardLayout);
 
+        // Create different panels for landing, login, sign up
         JPanel landingPage = createLandingPage();
         cardPanel.add(landingPage, "landingPage");
 
@@ -57,6 +70,7 @@ public class ToDoListApp extends JFrame {
         JPanel signUpPage = createSignUpPage();
         cardPanel.add(signUpPage, "signUpPage");
 
+        // Create frame for email verification
         createVerificationFrame();
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -74,6 +88,7 @@ public class ToDoListApp extends JFrame {
         setVisible(true);
     }
 
+    // Method to create the landing page panel
     private JPanel createLandingPage() {
         JPanel landingPage = new JPanel(new GridBagLayout());
 
@@ -100,13 +115,16 @@ public class ToDoListApp extends JFrame {
         gbc.insets = new Insets(0, 0, 10, 0);
         landingPage.add(signUpButton, gbc);
 
+        // Switch to login page when login button is clicked
         loginButton.addActionListener(e -> cardLayout.show(cardPanel, "loginPage"));
 
+        // Switch to sign up page when sign up button is clicked
         signUpButton.addActionListener(e -> cardLayout.show(cardPanel, "signUpPage"));
 
         return landingPage;
     }
 
+    // Method to customize the appearance of a button
     private void customizeButton(JButton button) {
         button.setBackground(Color.WHITE);
         button.setForeground(Color.BLACK);
@@ -115,15 +133,16 @@ public class ToDoListApp extends JFrame {
         button.setBorderPainted(false);
     }
 
+    // Method to create the login page panel
     private JPanel createLoginPage() {
-        JPanel loginPage = new JPanel(new FlowLayout());
+        // Create a new JPanel with GridBagLayout for the login page
+        JPanel loginPage = new JPanel(new GridBagLayout());
 
-        Icon closeIcon = new ImageIcon(getClass().getResource("closeicon.png"));
-        JButton closeButton = new JButton(closeIcon);
+        // Create a close button with a custom icon
+        JButton closeButton = new JButton("X");
         customizeButton(closeButton);
 
-        closeButton.setPreferredSize(new Dimension(20, 20));
-
+        // GridBagConstraints for the close button placement
         GridBagConstraints closeGbc = new GridBagConstraints();
         closeGbc.gridx = 0;
         closeGbc.gridy = 0;
@@ -131,6 +150,7 @@ public class ToDoListApp extends JFrame {
         closeGbc.insets = new Insets(10, 10, 0, 0);
         loginPage.add(closeButton, closeGbc);
 
+        // Create labels and fields for email, password, and title
         JLabel titleLabel = new JLabel("Log in");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
 
@@ -140,6 +160,8 @@ public class ToDoListApp extends JFrame {
         JTextField emailField = new JTextField(20);
         emailField.setForeground(Color.LIGHT_GRAY);
         emailField.setText("EMAIL");
+
+        // Add focus listener to handle placeholder text for email field
         emailField.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -162,6 +184,8 @@ public class ToDoListApp extends JFrame {
         passwordField.setForeground(Color.LIGHT_GRAY);
         passwordField.setEchoChar((char) 0);
         passwordField.setText("PASSWORD");
+
+        // Add focus listener to handle placeholder text for password field
         passwordField.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
@@ -182,8 +206,26 @@ public class ToDoListApp extends JFrame {
             }
         });
 
+        // Create login button with rounded corners
         JButton loginButton = new RoundedButton("Log in");
 
+        // Add ActionListener to handle login button clicks
+        loginButton.addActionListener(e -> {
+            // Retrieve user input for email and password
+            userEmail = emailField.getText();
+            password = new String(passwordField.getPassword());
+
+            // Validate email format
+            if (isValidEmail(userEmail)) {
+                // Show an error dialog for invalid email
+                showErrorDialog();
+                return; // Stop further processing
+            }
+            dispose();
+            SwingUtilities.invokeLater(() -> TaskManagerUI.main(null));
+        });
+
+        // GridBagConstraints for the placement of components
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 1;
@@ -205,19 +247,25 @@ public class ToDoListApp extends JFrame {
         gbc.gridy = 6;
         loginPage.add(loginButton, gbc);
 
+        // Add ActionListener to close button to return to the landing page
         closeButton.addActionListener(e -> cardLayout.show(cardPanel, "landingPage"));
 
+        // Return the created login page panel
         return loginPage;
     }
 
+    // Method to create a frame for email verification
     private void createVerificationFrame() {
+        // Create a new JFrame for email verification
         verificationFrame = new JFrame("Verified!");
         verificationFrame.setSize(300, 150);
         verificationFrame.setLocationRelativeTo(null);
         verificationFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
+        // Create a JPanel with GridBagLayout for the verification panel
         JPanel verificationPanel = new JPanel(new GridBagLayout());
 
+        // Create labels and button for the verification panel
         JLabel titleLabel = new JLabel("Verified!");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
 
@@ -226,11 +274,12 @@ public class ToDoListApp extends JFrame {
         JButton loginButton = new JButton("Log in");
         customizeButton(loginButton);
 
+        // Add ActionListener to handle login button clicks
         loginButton.addActionListener(e -> {
             cardLayout.show(cardPanel, "loginPage");
             verificationFrame.dispose();
         });
-
+        // GridBagConstraints for the placement of components in the verification panel
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -242,7 +291,7 @@ public class ToDoListApp extends JFrame {
 
         gbc.gridy = 2;
         verificationPanel.add(loginButton, gbc);
-
+        // Add the verification panel to the verification frame
         verificationFrame.add(verificationPanel);
     }
 
@@ -250,15 +299,15 @@ public class ToDoListApp extends JFrame {
         verificationFrame.setVisible(true);
     }
 
+    // Method to create the sign-up page panel
     private JPanel createSignUpPage() {
+        // Create a new JPanel with GridBagLayout for the sign-up page
         JPanel signUpPage = new JPanel(new GridBagLayout());
+        // Create a close button with a custom icon
+        JButton closeButton = new JButton("X");
 
-        Icon closeIcon = new ImageIcon(getClass().getResource("closeicon.png"));
-        JButton closeButton = new JButton(closeIcon);
         customizeButton(closeButton);
-
-        closeButton.setPreferredSize(new Dimension(20, 20));
-
+        // GridBagConstraints for the close button placement
         GridBagConstraints closeGbc = new GridBagConstraints();
         closeGbc.gridx = 0;
         closeGbc.gridy = 0;
@@ -266,6 +315,7 @@ public class ToDoListApp extends JFrame {
         closeGbc.insets = new Insets(10, 10, 0, 0);
         signUpPage.add(closeButton, closeGbc);
 
+        // Create labels and fields for email, username, password, and title
         JLabel titleLabel = new JLabel("Sign up");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 20));
 
@@ -338,13 +388,32 @@ public class ToDoListApp extends JFrame {
                 }
             }
         });
+        // Similar focus listeners for username and password fields
 
+        // Create sign-up button with rounded corners
         JButton signUpButton = new RoundedButton("Sign up");
 
         signUpButton.addActionListener(e -> {
+            userEmail = emailField.getText();
+            username = usernameField.getText();
+            password = new String(passwordField.getPassword());
+
+            if (isValidEmail(userEmail)) {
+                showErrorDialog();
+                return; // Stop further processing
+            }
+
+            System.out.println("Email: " + userEmail);
+            System.out.println("Username: " + username);
+            System.out.println("Password: " + password);
+
+            // Perform signup logic here
+            // You may want to validate the input and save it to a database in a real
+            // application
+
             showVerificationFrame();
         });
-
+        // Retrieve user input for email, username, and password
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.gridx = 0;
         gbc.gridy = 1;
@@ -380,6 +449,16 @@ public class ToDoListApp extends JFrame {
         return signUpPage;
     }
 
+    private boolean isValidEmail(String email) {
+        // Check if the email is not empty and contains an "@"
+        return !email.contains("@");
+    }
+
+    // Method to show an error dialog with a specified title and message
+    private void showErrorDialog() {
+        JOptionPane.showMessageDialog(this, "Please enter a valid email address", "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
     public static void main(String[] args) {
         try {
             UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
@@ -389,9 +468,10 @@ public class ToDoListApp extends JFrame {
             UIManager.put("Button.focusPainted", false);
             UIManager.put("Button.borderPainted", false);
         } catch (Exception e) {
+            // Print stack trace if an exception occurs while setting the look and feel
             e.printStackTrace();
         }
-
-        SwingUtilities.invokeLater(() -> new ToDoListApp());
+        // Run the application on the event dispatch thread
+        SwingUtilities.invokeLater(ToDoListApp::new);
     }
 }
