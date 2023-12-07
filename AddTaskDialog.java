@@ -33,14 +33,14 @@ public class AddTaskDialog extends JDialog {
         JPanel contentPanel = new JPanel();
         contentPanel.setLayout(new BoxLayout(contentPanel, BoxLayout.Y_AXIS));
         JTextField titleField = new JTextField("TITLE");
-        JTextArea descriptionArea = new JTextArea("DESCRIPTION");
-        JComboBox<String> dueDropdown = new JComboBox<>(new String[] {"Due"});
-        JComboBox<String> priorityDropdown = new JComboBox<>(new String[] {"Priority"});
+        JTextField dueTextField = new JTextField("Due");
+        JLabel priorityLabel = new JLabel("Priority:");
+        JComboBox<String> priorityDropdown = new JComboBox<>(new String[]{"High", "Medium","Low"});
 
         // Add components to the content panel
         contentPanel.add(titleField);
-        contentPanel.add(descriptionArea);
-        contentPanel.add(dueDropdown);
+        contentPanel.add(dueTextField);
+        contentPanel.add(priorityLabel);
         contentPanel.add(priorityDropdown);
         add(contentPanel, BorderLayout.CENTER);
 
@@ -55,7 +55,9 @@ public class AddTaskDialog extends JDialog {
         addButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                mgr.addTaskToPanel(taskListPanel, titleField.getText(), parentFrame);
+                String dueDate = dueTextField.getText();
+                String priority = (String) priorityDropdown.getSelectedItem();
+                mgr.addTaskToPanel(taskListPanel, titleField.getText(), dueDate, priority, parentFrame);
                 dispose(); // Close the dialog
             }
         });
